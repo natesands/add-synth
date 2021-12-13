@@ -1,4 +1,4 @@
 # add-synth
-Additive synthesis project
+Additive synthesis project (C++)
 ## SO FAR:
 * Oscillator class (Osc.h)
