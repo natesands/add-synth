@@ -2,9 +2,12 @@
 #define OSC_H
 
 #include <boost/math/constants/constants.hpp>
+#include <vector>
 
 /*--------------------------------------------------------------------------------
-  Oscillator class and associated wave functions.
+ -  Oscillator class.
+ -  Basic wave functions.
+ -  Oscillator bank class.
 --------------------------------------------------------------------------------*/
 
 const float pi = boost::math::constants::pi<float>();
@@ -22,6 +25,18 @@ class Osc {
     float incr;                /* incr = freq * 2pi / sample_rate */
     float twopiovrsr;          /* 2 pi / sample_rate */
     tickfunc func;              /* Pointer to oscillator's generating function */
+};
+
+class OscBank {
+  public:
+    OscBank(unsigned long sr) : sample_rate(sr) {}
+    unsigned long sample_rate;
+    float tick();               /* returns sum of each stored oscillator's next frame */
+    void add(Osc *osc_ptr);   
+    void preview(int dur);      /* Sound of combined oscillators */
+  private:
+    std::vector<Osc*> osc_bank;
+
 };
 
 /*  Waveform functions */

@@ -17,6 +17,7 @@ Osc::Osc(unsigned long sample_rate, float freq, tickfunc f) {
 /* Return's next frame and advances phase by freq * 2pi / sample_rate */
 float Osc::tick() {
   float val = func(phase);
+  //printf("%f\n",val);
   phase += incr;
   if (phase >= 2*pi) 
     phase -= 2*pi;
@@ -28,6 +29,36 @@ float Osc::tick() {
 /* Play sound for given number of seconds */
 void Osc::preview(int dur) {
   osc_play(this, dur);
+  phase = 0.0;  /* reset phase */
+}
+
+void OscBank::add(Osc *osc_ptr) {
+  if (osc_ptr->sample_rate != sample_rate) {
+    printf("Sample rate does not match...\n Oscilator not added to bank.\n");
+    return;
+  }
+  osc_bank.push_back(osc_ptr);
+}
+
+float OscBank::tick() {
+  if (osc_bank.size() == 0) return 0.0;
+  float val;
+  for (int i=0; i < osc_bank.size(); i++) {
+  //  printf("%d\n",i);
+    val += osc_bank[i]->tick();
+  }
+ // printf("%f\n",val);
+  return val;
+//  for (auto osc_ptr : osc_bank)
+//    val += osc_ptr->tick();
+
+//  return val;
+}
+
+void OscBank::preview(int dur) {
+  oscbank_play(this, dur);
+  for (int i=0; i< osc_bank.size(); i++)
+    osc_bank[i]->phase = 0.0;
 }
 
 /* Waveforms */

@@ -4,7 +4,7 @@
 #include <iostream>
 
 /* Portaudio interface functions */
-const int buf_size = 256;
+const int buf_size = 1024;
 
 void error(PaError err) {
   Pa_Terminate();
@@ -27,6 +27,25 @@ int osc_callback( const void *inputBuffer, void *outputBuffer,
 
 	for(i=0; i< buf_size; i++ )
 		*out++ = osc->tick();
+	return 0;
+}
+
+int osc_bank_callback( const void *inputBuffer, void *outputBuffer, 
+                           unsigned long framesPerBuffer, 
+                           const PaStreamCallbackTimeInfo* timeInfo,
+                           PaStreamCallbackFlags statusFlags,
+                           void *userData)
+{
+	OscBank *osc_bank = (OscBank*)userData;
+	float *out = (float*)outputBuffer;
+	unsigned int i;
+	(void) inputBuffer;  /* prevent unused variable warning */
+
+	for(i=0; i< buf_size; i++ ) {
+          float val = osc_bank->tick();
+          printf("%f\n",val);
+	  *out++ = val;
+        }
 	return 0;
 }
 
@@ -76,4 +95,33 @@ void osc_play(Osc* osc, int dur) {
     error(err);
 }
 
+void oscbank_play(OscBank* osc_bank, int dur) {
+  PaStream *stream;
+  PaError err;
+  PaStreamParameters outputParameters;
+  
+  /* Initialize portaudio and open stream */
+  pa_init(1, outputParameters); 
+  err = Pa_OpenStream( &stream,
+                       NULL,     /* no input channels */
+                       &outputParameters, 
+                       osc_bank->sample_rate,
+                       buf_size,
+                       paClipOff,
+                       osc_bank_callback,
+                       osc_bank);
+
+  if (err != paNoError) error(err);
+  
+  /* Start stream */
+  err = Pa_StartStream(stream);
+  Pa_Sleep(dur*1000);
+
+  /* Stop stream */
+  err = Pa_StopStream(stream);
+  if (err != paNoError) error(err);
+  err = Pa_Terminate();
+  if (err != paNoError)
+    error(err);
+}
 #endif 
