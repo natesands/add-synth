@@ -33,7 +33,7 @@ int osc_callback( const void *inputBuffer, void *outputBuffer,
 /* Initialize portaudio */
 void pa_init(int channels, PaStreamParameters &outputParameters) {
   PaError err; 
-  //err = Pa_Initialize();
+  err = Pa_Initialize();
   outputParameters.device = Pa_GetDefaultOutputDevice();
   if (outputParameters.device == paNoDevice) {
     printf("Error: no default output device\n");
@@ -50,7 +50,6 @@ void osc_play(Osc* osc, int dur) {
   PaStream *stream;
   PaError err;
   PaStreamParameters outputParameters;
-  err = Pa_Initialize();
   
   /* Initialize portaudio and open stream */
   pa_init(1, outputParameters); 
